@@ -20,9 +20,8 @@ class MembersController extends AppController {
          * この処理はPOSTされたタイミングでは不要な処理のため
          * 記入する位置を調整してください
          */
-        if (($this->Session->read('Posting')) && (empty($this->request->data['Member']))) {
-            $this->request->data['Member'] = $this->Session->read('Posting');
-        }
+        
+        // → ここにSessionの中身をフォームにする処理を書いてしまうとpostで判定が通った際も処理が実行されてしまう。
 
         // ① Postが送られたタイミングでデータが格納される（index内のvalidation）
 
@@ -36,63 +35,79 @@ class MembersController extends AppController {
                 //echo exit;
 
                 $this->Session->write('Posting', $this->request->data['Member']);
-                $this->redirect(array('action' => 'check'));
+                return $this->redirect(array('action' => 'check'));
 
                 //echo '成功です。';
-            } else {
+            }
                 
                 /**
                  * 無駄なeles文は書かないこと
                  */
 
-                // 最初の②の部分でセッションの値を代入する関数をとっていたため、バリデーション発動時の前の値の代入でこの操作が必要になったのではと考えられる。
-                // $this->Session->write('Posting', $this->request->data['Post']);
-                // $this->redirect(array('action'=>'index'));
-                //echo '失敗です。';
-                //echo"<pre>";var_dump($this->Member->validationErrors);echo"</pre>";                    
-            }
+                // → 削除
+            
+            
         }
+        
+        if (($this->Session->read('Posting')) && (empty($this->request->data['Member']))) {
+            $this->request->data['Member'] = $this->Session->read('Posting');
+        }
+        
+        
     }
 
     public function check() {
 
+        //ここでセッション情報がない場合を書くことで、セッション情報がある場合と考えたif文を１段階減らせている。
+        if(!$this->Session->read('Posting')){
+            $this->redirect(array('action' => 'index')); 
+            return;
+        }
+        
         // echo"<pre>";var_dump($this->Session->read('Posting'));echo"</pre>";exit;
         //セッション情報がきちんと入力されているか否かでindexからステップを経て来ているか判別
-        if ($this->Session->read('Posting')) {
 
-            $this->set('sesposts', $this->Session->read('Posting'));
 
-            if ($this->request->is('post')) {
+        $this->set('sesposts', $this->Session->read('Posting'));
 
-                //パスワードを暗号化する
+        if ($this->request->is('post')) {
+
+            //パスワードを暗号化する
+            /**
+            * この方式だと
+            * postされてる内容にuser_idとかプライマリーキーを入れられていると(開発者ツールでuser_idとかのツール使って勝手にフォーム生成されたりして)
+            * UPDATE文になり、勝手にレコードを書き換えることが可能だったりします
+            * 
+            * cakeでsaveを利用するとinsertとupdateをプライマリーキーで判断してくれちゃうので
+            * insertをしたい時はpostデータから必要なデータだけをとりだしてsave
+            * もしくはpostデータからプライマリーキーの配列を削除してsaveをするようにしましょう
+            */
+
+            // → saveの配列でプライマリーキー以外を導入（idとcreatedとmodifiedは自動で登録される・validateは既にやってるのでどっちでもいい）
+            // Model::save(array $data = null, boolean $validate = true, array $fieldList = array())
+            // $this->Modelname->save($data,$validate,$fieldList)
+
+            $sessionPlus = $this->Session->read('Posting');
+            $passwordHasher = new SimplePasswordHasher();
+            $sessionPlus['password'] = $passwordHasher->hash($sessionPlus['password']);
+
+            if ($this->Member->save($sessionPlus,true,array('name','email','password'))) {
+                $this->Session->setFlash('Success!');
+                $this->Session->delete('Posting');
                 /**
-                * この方式だと
-                * postされてる内容にuser_idとかプライマリーキーを入れられていると(開発者ツールでuser_idとかのツール使って勝手にフォーム生成されたりして)
-                * UPDATE文になり、勝手にレコードを書き換えることが可能だったりします
-                * 
-                * cakeでsaveを利用するとinsertとupdateをプライマリーキーで判断してくれちゃうので
-                * insertをしたい時はpostデータから必要なデータだけをとりだしてsave
-                * もしくはpostデータからプライマリーキーの配列を削除してsaveをするようにしましょう
-                */
-                $sessionPlus = $this->Session->read('Posting');
-                $passwordHasher = new SimplePasswordHasher();
-                $sessionPlus['password'] = $passwordHasher->hash($sessionPlus['password']);
+                 * redirectは別ページに飛ばし、処理が終わるため
+                 * return をつけよう
+                 * これがあると、cakeのredirectについて知らない人がコードを呼んでも
+                 * saveがtrueだとredirectして終了なんだなって一発でわかるので
+                 */
 
-                if ($this->Member->save($sessionPlus)) {
-                    $this->Session->setFlash('Success!');
-                    $this->Session->delete('Posting');
-                    /**
-                     * redirectは別ページに飛ばし、処理が終わるため
-                     * return をつけよう
-                     * これがあると、cakeのredirectについて知らない人がコードを呼んでも
-                     * saveがtrueだとredirectして終了なんだなって一発でわかるので
-                     */
-                    $this->redirect(array('action' => 'thanks'));
-                } else {
-                    $this->Session->setFlash('failed!');
-                }
+                // → 処理は同じ結果でもコードの見やすさでreturnをふっている。
+
+                return $this->redirect(array('action' => 'thanks'));
+            } else {
+                $this->Session->setFlash('failed!');
             }
-        } else {
+        }
             
             /**
              * この処理をcheckメソッドの一番上で行うことでif文のネストを避けることができる
@@ -105,8 +120,9 @@ class MembersController extends AppController {
              * if ($this->request->is('post')) {
              * ～～～～～～～～～～～
              */
-            $this->redirect(array('action' => 'index'));
-        }
+            
+            // → 上部参照。ネスト減少に加え、Sessionない場合にindexに移動の意味でもより読み込み量が少なくシンプルなコードでかける。
+        
     }
 
     public function thanks() {

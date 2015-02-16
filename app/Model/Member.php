@@ -10,24 +10,24 @@ class Member extends AppModel {
         'name' => array(
             'rule' => 'notEmpty',
             'required' => 'true',            
-            'message' => '入力よろっす'
+            'message' => '入力してください'
         ),
         'email' => array(
             'rule1' => array(
                 'rule' => 'notEmpty',
                 'required' => 'true',            
-                'message' => '入力よろっす'
+                'message' => '入力してください'
             ),
             // 真ならチェック通って、偽ならチェック通らない
             'rule2' => array(
                 'rule' => 'sameMail',            
-                'message' => 'アドレス重複してるよ'
+                'message' => '登録アドレスが重複しています。'
             )            
         ),
         'password' => array(
             'rule' => array('minLength', '4'),
             'required' => 'true',            
-            'message' => '4文字以上入力よろっす'
+            'message' => '4文字以上入力してください'
         )
     );
     
