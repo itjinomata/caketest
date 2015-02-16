@@ -14,14 +14,12 @@ class MembersController extends AppController {
 
     public function index() {
 
-        /**
-         * 恐らく確認画面から戻ってきた時にvalueに渡すということをしたいんだろうけど
-         * $this->request->dataに値を渡せばvalueに関してがcakeがよしなにやってくれるはず ①
-         * 
-         * またSessionが存在しているかどうかを判定してこの処理を書かなければSessionが存在しない時に内部的にエラーになってるはず ②
-         */
-        // $this->request->data['Post'] に値が存在すれば勝手にFormに値を代入してくれる。
         // ② セッション情報ある場合、入力（checkから戻ったとき）
+        
+        /**
+         * この処理はPOSTされたタイミングでは不要な処理のため
+         * 記入する位置を調整してください
+         */
         if (($this->Session->read('Posting')) && (empty($this->request->data['Member']))) {
             $this->request->data['Member'] = $this->Session->read('Posting');
         }
@@ -42,13 +40,11 @@ class MembersController extends AppController {
 
                 //echo '成功です。';
             } else {
-
+                
                 /**
-                 * すでにここがaction indexなので自分自身にredirectする意味はない
-                 * ここでredirectしなければまたindexのviewが表示されます
-                 * 
-                 * ここのアルゴリズムの説明が必要だったら声かけてください
+                 * 無駄なeles文は書かないこと
                  */
+
                 // 最初の②の部分でセッションの値を代入する関数をとっていたため、バリデーション発動時の前の値の代入でこの操作が必要になったのではと考えられる。
                 // $this->Session->write('Posting', $this->request->data['Post']);
                 // $this->redirect(array('action'=>'index'));
@@ -59,14 +55,7 @@ class MembersController extends AppController {
     }
 
     public function check() {
-        /**
-         * このactionはよくかけてるね
-         * ただSessionが存在するかどうかをチェックして
-         * 存在しない場合indexにredirectしてやる
-         * みたいに書かないと、
-         * いきなりcheckに飛んできた時にエラーのページが表示されるので
-         * Sessionの存在チェックをしてください
-         */
+
         // echo"<pre>";var_dump($this->Session->read('Posting'));echo"</pre>";exit;
         //セッション情報がきちんと入力されているか否かでindexからステップを経て来ているか判別
         if ($this->Session->read('Posting')) {
@@ -76,6 +65,15 @@ class MembersController extends AppController {
             if ($this->request->is('post')) {
 
                 //パスワードを暗号化する
+                /**
+                * この方式だと
+                * postされてる内容にuser_idとかプライマリーキーを入れられていると(開発者ツールでuser_idとかのツール使って勝手にフォーム生成されたりして)
+                * UPDATE文になり、勝手にレコードを書き換えることが可能だったりします
+                * 
+                * cakeでsaveを利用するとinsertとupdateをプライマリーキーで判断してくれちゃうので
+                * insertをしたい時はpostデータから必要なデータだけをとりだしてsave
+                * もしくはpostデータからプライマリーキーの配列を削除してsaveをするようにしましょう
+                */
                 $sessionPlus = $this->Session->read('Posting');
                 $passwordHasher = new SimplePasswordHasher();
                 $sessionPlus['password'] = $passwordHasher->hash($sessionPlus['password']);
@@ -83,12 +81,30 @@ class MembersController extends AppController {
                 if ($this->Member->save($sessionPlus)) {
                     $this->Session->setFlash('Success!');
                     $this->Session->delete('Posting');
+                    /**
+                     * redirectは別ページに飛ばし、処理が終わるため
+                     * return をつけよう
+                     * これがあると、cakeのredirectについて知らない人がコードを呼んでも
+                     * saveがtrueだとredirectして終了なんだなって一発でわかるので
+                     */
                     $this->redirect(array('action' => 'thanks'));
                 } else {
                     $this->Session->setFlash('failed!');
                 }
             }
         } else {
+            
+            /**
+             * この処理をcheckメソッドの一番上で行うことでif文のネストを避けることができる
+             * 
+             * if(!$this->Session->read('Posting')){
+             *      $this->redirect(array('action' => 'index')); 
+             *      return;
+             * }
+             * 
+             * if ($this->request->is('post')) {
+             * ～～～～～～～～～～～
+             */
             $this->redirect(array('action' => 'index'));
         }
     }

@@ -5,6 +5,7 @@
 class Member extends AppModel {
 
     //バリデーション（imageについては後で実装）- ルール２つも可能
+    
     public $validate = array(
         'name' => array(
             'rule' => 'notEmpty',

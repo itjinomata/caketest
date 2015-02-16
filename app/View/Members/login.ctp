@@ -21,7 +21,13 @@
       <dl>
         <dt>メールアドレス</dt>
         <dd>
-        <?php echo $this->Form->input('Member.email'); ?>
+        <?php 
+        /**
+         * Formの名前がMemberなので
+         * 各inputにMember.を入力しなくても
+         * Memberの配列に入った状態でPOSTされます
+         */
+        echo $this->Form->input('Member.email'); ?>
         </dd>
         <dt>パスワード</dt>
         <dd>
