@@ -45,7 +45,10 @@
 		<dd>
 
                 <?php 
-                if($imgexist == 'true'){
+                // $this->dataでリクエストデータを持ってこれる。
+                // 空判別しなければ値がNULLのとき、エラーが出る。
+                // issetは空でなければ真を返す関数
+                if(isset($this->data['Member']['image']['name'])){
                 ?>
 
                     <!-- イメージを表示 -->

@@ -4,15 +4,18 @@ App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
 
 class MembersController extends AppController {
 
-    //Authの仕様のログインページへのリンク回避
+    //Authの仕様でログイン無しでアクセスできる許可を与える
+    //Member内のみで適用
     public function beforeFilter() {
         parent::beforeFilter();
 
-        //リンク回避の範囲全体
+        
         /**
          * リンク回避は正しい表現ではない
          * Auth認証なしでアクセスできるメソッドの定義です
          */
+        // → Member内はどこもAuth認証なしでアクセスが許可されている。
+        
         $this->Auth->allow();
     }
 
@@ -37,6 +40,8 @@ class MembersController extends AppController {
                  * Postingに画像の情報を格納してしまえばいいんじゃないかな,
                  * saveの処理も楽になるだろうし
                  */
+                // → 今回に関してはセッション発生や画像アップのタイミングなどの仕様上、セッション２つの方が扱いやすいと考えた。
+                
                 $this->Session->write('Photo', $this->request->data['Member']['image']['name']);
                 
             }
@@ -70,17 +75,14 @@ class MembersController extends AppController {
              * 上のほうで書いたセッション関係のコメントと合わせて考えると
              * imgexistは不要になるんじゃないかと
              */
-            $this->set('imgexist', 'true');
+            // → Session Photoの値をリクエストデータに入れているため、アップないときもリクエストデータを呼び出すことは可能
+            // → この考えに基づきindex.ctpも編集
                         
             if($this->request->data['Member']['image']){
                 $this->set('imgpass', $this->request->data['Member']['image']);                         
             }else if($sessionCheck['image']){ //重複してる場合はリクエストデータが優先される。
                 $this->set('imgpass', $sessionCheck['image']);                
             }
-            
-        }else{
-            
-            $this->set('imgexist', 'false');
             
         }
         
