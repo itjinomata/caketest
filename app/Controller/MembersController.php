@@ -9,6 +9,10 @@ class MembersController extends AppController {
         parent::beforeFilter();
 
         //リンク回避の範囲全体
+        /**
+         * リンク回避は正しい表現ではない
+         * Auth認証なしでアクセスできるメソッドの定義です
+         */
         $this->Auth->allow();
     }
 
@@ -28,6 +32,11 @@ class MembersController extends AppController {
                 //この時点でpicture name書き換えておかないと$imageの値を他の関数に引き継げない。
                 //ここの部分はViewにおける表示画面の参照元を表すので、表示名を変えても構わない。
                 $this->request->data['Member']['image']['name'] = $image;
+                /**
+                 * 無駄にセッション書き込まなくても
+                 * Postingに画像の情報を格納してしまえばいいんじゃないかな,
+                 * saveの処理も楽になるだろうし
+                 */
                 $this->Session->write('Photo', $this->request->data['Member']['image']['name']);
                 
             }
@@ -55,6 +64,12 @@ class MembersController extends AppController {
         
             $sessionCheck = $this->Session->read('Posting');
             
+            /**
+             * imgexistで画像あるか判定してると思うけど
+             * view側で$this->dataでrequest->dataの値を参照できるので
+             * 上のほうで書いたセッション関係のコメントと合わせて考えると
+             * imgexistは不要になるんじゃないかと
+             */
             $this->set('imgexist', 'true');
                         
             if($this->request->data['Member']['image']){
@@ -91,15 +106,6 @@ class MembersController extends AppController {
         if ($this->request->is('post')) {
 
             //パスワードを暗号化する
-            /**
-            * この方式だと
-            * postされてる内容にuser_idとかプライマリーキーを入れられていると(開発者ツールでuser_idとかのツール使って勝手にフォーム生成されたりして)
-            * UPDATE文になり、勝手にレコードを書き換えることが可能だったりします
-            * 
-            * cakeでsaveを利用するとinsertとupdateをプライマリーキーで判断してくれちゃうので
-            * insertをしたい時はpostデータから必要なデータだけをとりだしてsave
-            * もしくはpostデータからプライマリーキーの配列を削除してsaveをするようにしましょう
-            */
 
             // → saveの配列でプライマリーキー以外を導入（idとcreatedとmodifiedは自動で登録される・validateは既にやってるのでどっちでもいい）
             // Model::save(array $data = null, boolean $validate = true, array $fieldList = array())
@@ -119,12 +125,6 @@ class MembersController extends AppController {
                 $this->Session->setFlash('Success!');
                 $this->Session->delete('Posting');
                 $this->Session->delete('Photo');
-                /**
-                 * redirectは別ページに飛ばし、処理が終わるため
-                 * return をつけよう
-                 * これがあると、cakeのredirectについて知らない人がコードを呼んでも
-                 * saveがtrueだとredirectして終了なんだなって一発でわかるので
-                 */
 
                 // → 処理は同じ結果でもコードの見やすさでreturnをふっている。
 
@@ -133,20 +133,6 @@ class MembersController extends AppController {
                 $this->Session->setFlash('failed!');
             }
         }
-            
-            /**
-             * この処理をcheckメソッドの一番上で行うことでif文のネストを避けることができる
-             * 
-             * if(!$this->Session->read('Posting')){
-             *      $this->redirect(array('action' => 'index')); 
-             *      return;
-             * }
-             * 
-             * if ($this->request->is('post')) {
-             * ～～～～～～～～～～～
-             */
-            
-            // → 上部参照。ネスト減少に加え、Sessionない場合にindexに移動の意味でもより読み込み量が少なくシンプルなコードでかける。
         
     }
 
