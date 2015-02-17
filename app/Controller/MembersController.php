@@ -12,40 +12,37 @@ class MembersController extends AppController {
         $this->Auth->allow();
     }
 
-    public function index() {
-
-        // ② セッション情報ある場合、入力（checkから戻ったとき）
+    public function index() {      
         
-        /**
-         * この処理はPOSTされたタイミングでは不要な処理のため
-         * 記入する位置を調整してください
-         */
-        
-        // → ここにSessionの中身をフォームにする処理を書いてしまうとpostで判定が通った際も処理が実行されてしまう。
-
-        // ① Postが送られたタイミングでデータが格納される（index内のvalidation）
-
         if ($this->request->is('post')) {
+            
+            //もし画像入力があれば更新される。なかったらそのまま（セッション’Photo’で制御）
+            if($this->request->data['Member']['image']['name']){
+                
+                // 画像をアップロードする
+                $image = date('YmdHis') . $this->request->data['Member']['image']['name'];
+
+                // アップロード（一時フォルダ（temporary）フォルダを介する。P111）
+                move_uploaded_file($this->request->data['Member']['image']['tmp_name'], IMAGES . 'member_picture' . DS . $image);               
+
+                //この時点でpicture name書き換えておかないと$imageの値を他の関数に引き継げない。
+                //ここの部分はViewにおける表示画面の参照元を表すので、表示名を変えても構わない。
+                $this->request->data['Member']['image']['name'] = $image;
+                $this->Session->write('Photo', $this->request->data['Member']['image']['name']);
+                
+            }
+            
+            $this->request->data['Member']['image']['name'] = $this->Session->read('Photo');
+            
             $this->Member->set($this->request->data['Member']);
             // リクエストデータの形式Post
 
             if ($this->Member->validates()) {
-
-                //echo"<pre>";var_dump($this->request->data);echo"</pre>";
-                //echo exit;
-
-                $this->Session->write('Posting', $this->request->data['Member']);
+                             
+                $this->Session->write('Posting', $this->request->data['Member']);                
                 return $this->redirect(array('action' => 'check'));
 
-                //echo '成功です。';
-            }
-                
-                /**
-                 * 無駄なeles文は書かないこと
-                 */
-
-                // → 削除
-            
+            }                        
             
         }
         
@@ -53,6 +50,27 @@ class MembersController extends AppController {
             $this->request->data['Member'] = $this->Session->read('Posting');
         }
         
+        //画像ファイルが一度でもアップされているか否か
+        if($this->Session->read('Photo')){
+        
+            $sessionCheck = $this->Session->read('Posting');
+            
+            $this->set('imgexist', 'true');
+                        
+            if($this->request->data['Member']['image']){
+                $this->set('imgpass', $this->request->data['Member']['image']);                         
+            }else if($sessionCheck['image']){ //重複してる場合はリクエストデータが優先される。
+                $this->set('imgpass', $sessionCheck['image']);                
+            }
+            
+        }else{
+            
+            $this->set('imgexist', 'false');
+            
+        }
+        
+        //var_dump($this->request->data['Member']['image']['name']);var_dump($this->Session->read('Photo'));exit;
+        $this->set('photo', $this->Session->read('Photo'));
         
     }
 
@@ -90,10 +108,17 @@ class MembersController extends AppController {
             $sessionPlus = $this->Session->read('Posting');
             $passwordHasher = new SimplePasswordHasher();
             $sessionPlus['password'] = $passwordHasher->hash($sessionPlus['password']);
+ 
+            $sessionPlus['picture'] = $sessionPlus['image']['name']; 
 
-            if ($this->Member->save($sessionPlus,true,array('name','email','password'))) {
+            //var_dump($sessionPlus);exit;
+            
+            //画像アップロードでエラーが出るので、バリデーションをfalseにしておく
+            if ($this->Member->save($sessionPlus,false,array('name','email','password','picture'))) {
+                //var_dump($sessionPlus);exit;
                 $this->Session->setFlash('Success!');
                 $this->Session->delete('Posting');
+                $this->Session->delete('Photo');
                 /**
                  * redirectは別ページに飛ばし、処理が終わるため
                  * return をつけよう

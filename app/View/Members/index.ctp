@@ -15,7 +15,7 @@
 <div id="content">
 <p>次のフォームに必要事項をご記入ください。</p>
 
-<?php echo $this->Form->create('Member', array('type' => 'post')); ?>
+<?php echo $this->Form->create('Member', array('type' => 'file', 'enctype' => 'multipart/form-data')); ?>
 	<dl>
 		<dt>ニックネーム<span class="required">必須</span></dt>
 		<dd>
@@ -29,7 +29,7 @@
                 
 		<dt>メールアドレス<span class="required">必須</span></dt>
 		<dd>
-                <?php echo $this->Form->input('email', array('required' => "required")); ?> 
+                <?php echo $this->Form->input('email', array('size' => 35 ,'required' => false, 'maxlength' => 255)); ?> 
 		</dd>
 		
                 <p></p><p></p>
@@ -40,19 +40,43 @@
         	<!-- <input type="password" name="password" size="10" maxlength="20" value="" /> -->
                 </dd>
                 
-                <!--
-		<dt>写真など</dt>
+                
+		<dt>写真</dt>
 		<dd>
 
+                <?php 
+                if($imgexist == 'true'){
+                ?>
+
+                    <!-- イメージを表示 -->
+                    <p>現在登録されている写真</p>
+                    <p><?php echo $this->Html->image('member_picture' . DS . $photo); ?></p>
+                    <?php var_dump($photo); ?>
+
+                    <p>再アップロード</p>
+                    <?php echo $this->Form->input('image', array('type' => 'file')); ?>
+
+                <?php
+                } else {
+                ?>
+
+                    <p>アップロード</p>
+                    <?php echo $this->Form->input('image', array('type' => 'file')); ?>
+
+                <?php 
+                }
+                ?>
+
+                <!--
+                 
 	        	<p>現在登録されている写真</p>
-	        	<p><img src="./member_picture/" width="100" height="100" alt="" /></p>
+	        	<p><img src="<?php echo $this->Html->image('cake_logo.png'); ?>" width="100" height="100" alt="" /></p>
 
 	        	<p>再アップロード</p>
 	        	<input type="file" name="image" size="35" value="test"  />
-
-                </dd>
+                
                 -->
-
+                </dd>
 	</dl>
 
 	<div>

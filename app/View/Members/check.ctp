@@ -35,6 +35,10 @@
 		<dd>
 		【表示されません】
 		</dd>
+                <dt>写真など</dt>
+		<dd>
+                <p><?php echo $this->Html->image('member_picture' . DS . $sesposts['image']['name']); ?></p>
+		</dd>
 	</dl>
 	<div><?php echo $this->Html->link('書き直す','./index') ?>　| 
             <?php echo $this->Form->end('登録する'); ?>
