@@ -87,6 +87,7 @@ class MembersController extends AppController {
 
 
         $this->set('sesposts', $this->Session->read('Posting'));
+        
 
         if ($this->request->is('post')) {
 
@@ -156,6 +157,7 @@ class MembersController extends AppController {
 
     public function login() {
 
+        //既にログインされている状態ならばページ移動
         if ($this->Auth->loggedIn()) {
             return $this->redirect($this->Auth->redirectUrl());
         }

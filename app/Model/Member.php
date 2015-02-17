@@ -3,6 +3,8 @@
 // App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
 
 class Member extends AppModel {
+
+    public $primaryKey = 'member_id';
     
     //バリデーション（imageについては後で実装）- ルール２つも可能
     
