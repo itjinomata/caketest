@@ -53,7 +53,7 @@
 
                     <!-- イメージを表示 -->
                     <p>現在登録されている写真</p>
-                    <p><?php echo $this->Html->image('member_picture' . DS . $photo); ?></p>
+                    <p><?php echo $this->Html->image('member_picture' . DS . $photo, array('width' => '48' , 'height' => '48' )); ?></p>
                     <?php var_dump($photo); ?>
 
                     <p>再アップロード</p>

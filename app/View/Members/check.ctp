@@ -37,7 +37,7 @@
 		</dd>
                 <dt>写真など</dt>
 		<dd>
-                <p><?php echo $this->Html->image('member_picture' . DS . $sesposts['image']['name']); ?></p>
+                <p><?php echo $this->Html->image('member_picture' . DS . $sesposts['image']['name'], array('width' => '48' , 'height' => '48' )); ?></p>
 		</dd>
 	</dl>
 	<div><?php echo $this->Html->link('書き直す','./index') ?>　| 

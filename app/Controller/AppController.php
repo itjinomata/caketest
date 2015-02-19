@@ -49,5 +49,11 @@ class AppController extends Controller {
                        )
 		)
 	);
+        
+        public function beforeFilter(){
+            //上記でユーザー情報はMemberで指定されている。
+            $this->set('user', $this->Auth->user());
+        }
+        
     
 }

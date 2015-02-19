@@ -8,6 +8,16 @@
 
 <body>
 
+    <?php //echo $this->element('sql_dump');exit; ?>
+    
+    <?php //var_dump($count);exit; ?>
+    <?php //var_dump($posts); ?>  
+    <!-- array(7) { ["member_id"]=> string(2) "34" 
+    ["name"]=> string(3) "abc" ["email"]=> string(7) "def@ghi" ["photo"]=> string(0) "" 
+    ["picture"]=> string(0) "" ["created"]=> string(19) "2015-02-16 10:59:30" 
+    ["modified"]=> string(19) "2015-02-16 10:59:30" } -->
+    <?php //echo $count; ?>
+    
   <div id="wrap">
     <div id="head">
       <h1>ひとこと掲示板</h1>
@@ -16,10 +26,10 @@
     	<div style="text-align: right"><a href="logout.php">ログアウト</a></div>
       <form action="" method="post">
         <dl>
-          <dt><?php //echo htmlspecialchars($member['name']); ?>さん、メッセージをどうぞ</dt>
+          <dt><?php echo h($user['name']); ?>さん、メッセージをどうぞ</dt>
           <dd>
-            <textarea name="message" cols="50" rows="5"><?php //echo htmlspecialchars($message); ?></textarea>
-            <input type="hidden" name="reply_post_id" value="<?php //echo htmlspecialchars($_REQUEST['res']); ?>" />
+            <textarea name="message" cols="50" rows="5"><?php //echo h($message); ?></textarea>
+            <input type="hidden" name="reply_post_id" value="<?php //echo h($_REQUEST['res']); ?>" />
           </dd>
         </dl>
         <div>
@@ -28,66 +38,50 @@
           </p>
         </div>
       </form>
-      
+        
   <?php
-  //while($post = $posts->fetch(PDO::FETCH_ASSOC)):
+  foreach ($pgn as $post) {
   ?>
       <div class="msg">
 
-      <img src="./join/member_picture/<?php //echo htmlspecialchars($post['picture']); ?>" width="48" height="48" alt="<?php //echo htmlspecialchars($post['name']); ?>" />
+      <?php echo $this->Html->image('member_picture' . DS . $post['Member']['picture'],
+        array('alt' => $post['Member']['name'] , 'width' => '48' , 'height' => '48' )
+      ); ?>
 
       <!-- 表示メッセージ（URLがあれば、リンク作成の仕様） -->
-      <p><?php //echo makeLink(htmlspecialchars($post['message'])); ?>
+     <?php 
+        //echo makeLink(htmlspecialchars($post['message']));
+        echo h($post['Post']['message']);     
+     ?>
 
-      <span class="name">（<?php //echo htmlspecialchars($post['name']); ?>）</span>[<a href="index.php?res=<?php //echo htmlspecialchars($post['id']); ?>">Re</a>]</p>
+      <span class="name">（<?php echo h($post['Member']['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['Post']['post_id']); ?>">Re</a>]</p>
       
-      <p class="day"><a href="view.php?id=<?php //echo htmlspecialchars($post['id']); ?>"><?php //echo htmlspecialchars($post['created']); ?></a>
+      <p class="day"><a href="view.php?id=<?php echo h($post['Post']['post_id']); ?>"><?php echo h($post['Post']['created']); ?></a>
 
           <?php
-          //if ($post['reply_post_id'] > 0):
+          if ($post['Post']['reply_post_id'] > 0):
           ?>
-              <a href="view.php?id=<?php //echo htmlspecialchars($post['reply_post_id']); ?>">返信元のメッセージ</a>
+              <a href="view.php?id=<?php echo h($post['Post']['reply_post_id']); ?>">返信元のメッセージ</a>
           <?php
-          //endif;
+          endif;
           ?>
 
           <?php
-          //if ($_SESSION['id'] == $post['member_id']):
+          if ($user['member_id'] == $post['Post']['member_id']):
           ?>
-          	[<a href="delete.php?id=<?php //echo htmlspecialchars($post['id']); ?>" style="color: #F33;">削除</a>]
+          	[<a href="delete.php?id=<?php echo h($post['Post']['member_id']); ?>" style="color: #F33;">削除</a>]
           <?php
-          //endif;
+          endif;
           ?>
 
       </p>
       </div>
   <?php
-  //endwhile;
+  }
   ?>
 
   <ul class="paging">
-  <?php
-  //if ($page > 1) {
-  ?>
-  <li><a href="index.php?page=<?php //print($page - 1); ?>">前のページへ</a></li>
-  <?php
-  //} else {
-  ?>
-  <li>前のページへ</li>
-  <?php
-  //}
-  ?>
-  <?php
-  //if ($page < $maxPage) {
-  ?>
-  <li><a href="index.php?page=<?php //print($page + 1); ?>">次のページへ</a></li>
-  <?php
-  //} else {
-  ?>
-  <li>次のページへ</li>
-  <?php
-  //}
-  ?>
+      <?php echo $this->Paginator->prev('<< 前へ'); ?>　<?php echo $this->Paginator->numbers(); ?>　<?php echo $this->Paginator->next('次へ >>'); ?>
   </ul>
     </div>
     <div id="foot">

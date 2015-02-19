@@ -6,6 +6,8 @@ class Member extends AppModel {
 
     public $primaryKey = 'member_id';
     
+    public $hasMany = 'Post';
+    
     //バリデーション（imageについては後で実装）- ルール２つも可能
     
     public $validate = array(
@@ -105,8 +107,8 @@ class Member extends AppModel {
     
     
     
-    public function listing2(){
-        return $this->find('all', array('fields' => array('name','picture')));       
+    public function listing(){
+        return $this->find('all');       
     }
     
 }
