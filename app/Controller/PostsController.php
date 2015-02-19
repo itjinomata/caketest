@@ -20,8 +20,21 @@ class PostsController extends AppController {
 	}
     
         
-        public function view() {
-            $this->set('posts', $this->Post->recording());            
+        public function view($id) {
+            
+            //var_dump($id);exit;
+            
+            //postデータの獲得
+            $this->set('post', $this->Post->recording($id));   
+            
+            $table = $this->Post->recording($id);
+            
+            //prevデータ（前のデータ）の獲得
+            $this->set('prev', $this->Post->recording($table[0]['Post']['reply_post_id']));            
+            
+            //nextデータの獲得
+            $this->set('nexts', $this->Post->nexting($id));               
+            
         }  
         
 }

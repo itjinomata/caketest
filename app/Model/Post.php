@@ -13,8 +13,13 @@ class Post extends AppModel {
         return $this->find('all', array('order' => array('Post.post_id DESC')));
     }
    
-    public function recording($id = NULL){
+    public function recording($id){
+        //var_dump($id);exit;
         return $this->find('all', array('conditions' => array('Post.post_id' => $id)));
+    }
+   
+    public function nexting($id = NULL){
+        return $this->find('all', array('conditions' => array('Post.reply_post_id' => $id)));
     }
 
 }

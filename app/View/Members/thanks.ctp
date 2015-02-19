@@ -14,7 +14,7 @@
 
 <div id="content">
 <p>ユーザー登録が完了しました</p>
-<p><?php echo $this->Html->link('ログインする','./login') ?></p>
+<p><?php echo $this->Html->link('ログインする','./login'); ?></p>
 </div>
 
 <div id="foot">

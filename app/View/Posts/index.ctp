@@ -23,7 +23,7 @@
       <h1>ひとこと掲示板</h1>
     </div>
     <div id="content">
-    	<div style="text-align: right"><a href="logout.php">ログアウト</a></div>
+    	<div style="text-align: right"><?php echo $this->Html->link('ログアウト','./logout'); ?></div>
       <form action="" method="post">
         <dl>
           <dt><?php echo h($user['name']); ?>さん、メッセージをどうぞ</dt>
@@ -54,14 +54,14 @@
         echo h($post['Post']['message']);     
      ?>
 
-      <span class="name">（<?php echo h($post['Member']['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['Post']['post_id']); ?>">Re</a>]</p>
+      <span class="name">（<?php echo h($post['Member']['name']); ?>）</span>[<?php echo $this->Html->link('Re','./index/' . $post['Post']['post_id']); ?>]</p>
       
-      <p class="day"><a href="view.php?id=<?php echo h($post['Post']['post_id']); ?>"><?php echo h($post['Post']['created']); ?></a>
+      <p class="day"><?php echo $this->Html->link($post['Post']['created'],'./view/' . $post['Post']['post_id']); ?>
 
           <?php
           if ($post['Post']['reply_post_id'] > 0):
           ?>
-              <a href="view.php?id=<?php echo h($post['Post']['reply_post_id']); ?>">返信元のメッセージ</a>
+              <?php echo $this->Html->link('返信元のメッセージ','./view/' . $post['Post']['reply_post_id']); ?>
           <?php
           endif;
           ?>
@@ -69,7 +69,7 @@
           <?php
           if ($user['member_id'] == $post['Post']['member_id']):
           ?>
-          	[<a href="delete.php?id=<?php echo h($post['Post']['member_id']); ?>" style="color: #F33;">削除</a>]
+          	[<?php echo $this->Html->link('削除','./delete/' . $post['Post']['post_id']); ?>]
           <?php
           endif;
           ?>
