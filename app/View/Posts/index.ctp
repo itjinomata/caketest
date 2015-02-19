@@ -24,17 +24,22 @@
     </div>
     <div id="content">
     	<div style="text-align: right"><?php echo $this->Html->link('ログアウト','./logout'); ?></div>
-      <form action="" method="post">
+        <?php echo $this->Form->create('Post', array('type' => 'post')); ?>
+        <?php echo $this->Form->hidden('member_id', array('value' => $user['member_id'])); ?> 
         <dl>
           <dt><?php echo h($user['name']); ?>さん、メッセージをどうぞ</dt>
           <dd>
-            <textarea name="message" cols="50" rows="5"><?php //echo h($message); ?></textarea>
-            <input type="hidden" name="reply_post_id" value="<?php //echo h($_REQUEST['res']); ?>" />
+            <?php echo $this->Form->textarea('message', array('cols' => 50 ,'rows' => 5 , 'value' => '')); ?> 
+            <!-- <textarea name="message" cols="50" rows="5"><?php //echo h($message); ?></textarea> -->
+            
+            <?php echo $this->Form->hidden('reply_post_id', array('value' => 0)); ?>               
+            <!-- <input type="hidden" name="reply_post_id" value="<?php //echo h($_REQUEST['res']); ?>" /> -->
           </dd>
         </dl>
         <div>
           <p>
-            <input type="submit" value="投稿する" />
+            <?php echo $this->Form->end('投稿する'); ?>
+            <!-- <input type="submit" value="投稿する" /> -->
           </p>
         </div>
       </form>
