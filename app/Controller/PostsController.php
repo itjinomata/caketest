@@ -1,7 +1,5 @@
 <?php
 
-//返信機能
-//URL出力
 
 class PostsController extends AppController {
 
@@ -14,7 +12,7 @@ class PostsController extends AppController {
         );
         
         //関数に値が渡されなかったら、カッコ内の値が渡される。
-    	public function index($id = 0) {
+    	public function index($postId = 0) {
             /**
              * tableのプライマリーキーがidならこれでいいけど
              * もし違うのであれば変数名変えてください
@@ -24,18 +22,20 @@ class PostsController extends AppController {
              * 値が渡されなかった際、id0が入るつまり何にも紐付いていないデータを取得するんだな
              * と勘違いされる可能性があるためです
              */
-            
+            // → 引数$idがURLを取得する仕様と思っておりました。引数どんな値でも大丈夫だったんですね。修正しました。
+            // → 引数をここで0にしてるのは、返信でない場合はreply_post_idに0を入れる仕様になっているため、このように考えています。
+                        
             $listing = $this->Post->listing();
             $listMax = $listing[0]['Post']['post_id'];
             
-            if($id > 0 && $id <= $listMax){
-                $this->set('postId', $id);
+            if($postId > 0 && $postId <= $listMax){
+                $this->set('postId', $postId);
             }else{
                 $this->set('postId', 0);                
             }
                 
             $this->set('posts', $this->Post->listing());            
-            $this->set('reply', $this->Post->recording($id));
+            $this->set('reply', $this->Post->recording($postId));
             
             //一覧表示の制御（foreach）をここでやる。それ以外は、paginateが勝手に$pagenateから計算してページを割り振ってくれる。
             $this->set('pgn', $this->paginate());                   
@@ -56,13 +56,13 @@ class PostsController extends AppController {
 	}
     
         
-        public function view($id = false) {
+        public function view($postId = false) {
  
             //postされている以外の数の時はindexにリダイレクトさせる。
             $listing = $this->Post->listing();
             $listMax = $listing[0]['Post']['post_id'];
             
-            if($id > 0 && $id <= $listMax){
+            if($postId > 0 && $postId <= $listMax){
                 //そのまま以後の操作を行う
             }else{
                 return $this->redirect(array('action'=>'index'));
@@ -79,7 +79,7 @@ class PostsController extends AppController {
              */
             
             //postデータの獲得
-            $table = $this->Post->recording($id);
+            $table = $this->Post->recording($postId);
             $this->set('post', $table);            
             
             /**
@@ -93,14 +93,14 @@ class PostsController extends AppController {
             $this->set('prev', $this->Post->recording($table[0]['Post']['reply_post_id']));            
             
             //nextデータの獲得
-            $this->set('nexts', $this->Post->nexting($id));               
+            $this->set('nexts', $this->Post->nexting($postId));               
             
         }  
         
-        public function delete($id = false) {
+        public function delete($postId = false) {
             
             $user = $this->Auth->user();
-            $table = $this->Post->recording($id);
+            $table = $this->Post->recording($postId);
             
             
             /**
@@ -110,8 +110,10 @@ class PostsController extends AppController {
              * (string)0 = (int)0
              * が成り立ってしまい、これで思わぬバグにつながることがあります
              */
-            if ($user['member_id'] == $table[0]['Post']['member_id']){            
-                if ($this->Post->delete($id)) {
+            // → ありがとうございます。型を定義してない分、型合わせも考える必要があるんですよね。修正・納得しました。
+            
+            if ($user['member_id'] === $table[0]['Post']['member_id']){            
+                if ($this->Post->delete($postId)) {
                     $this->Session->setFlash('Deleted!');
                     $this->redirect(array('action'=>'index'));
                 }             

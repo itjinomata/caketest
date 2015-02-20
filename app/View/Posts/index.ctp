@@ -25,7 +25,7 @@
           <dd>
             <?php 
             if(isset($reply[0]['Post']['message'])){
-                echo $this->Form->textarea('message', array('cols' => 50 ,'rows' => 5, 'value' => $reply[0]['Post']['message']));
+                echo $this->Form->textarea('message', array('cols' => 50 ,'rows' => 5, 'value' => '@' . $reply[0]['Member']['name'] . ' ' . $reply[0]['Post']['message']));
             }else{
                 echo $this->Form->textarea('message', array('cols' => 50 ,'rows' => 5));                
             }
