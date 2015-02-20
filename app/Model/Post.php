@@ -21,9 +21,9 @@ class Post extends AppModel {
     public function nexting($id = NULL){
         return $this->find('all', array('conditions' => array('Post.reply_post_id' => $id)));
     }
-
-    public function makeLink($value) {
-	return mb_ereg_replace("(https?)(://[[:alnum:]\+\$\;\?\.%,!#~*/:@&=_-]+)", '<a href="\1\2">\1\2</a>' , $value);
+ 
+    public function counter(){
+        return $this->find('count');
     }
     
 }

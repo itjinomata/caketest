@@ -13,9 +13,20 @@ class PostsController extends AppController {
             )
         );
         
-    
-    	public function index() {
-            $this->set('posts', $this->Post->listing());
+        //関数に値が渡されなかったら、カッコ内の値が渡される。
+    	public function index($id = 0) {            
+            
+            $listing = $this->Post->listing();
+            $listMax = $listing[0]['Post']['post_id'];
+            
+            if($id > 0 && $id <= $listMax){
+                $this->set('postId', $id);
+            }else{
+                $this->set('postId', 0);                
+            }
+                
+            $this->set('posts', $this->Post->listing());            
+            $this->set('reply', $this->Post->recording($id));
             
             //一覧表示の制御（foreach）をここでやる。それ以外は、paginateが勝手に$pagenateから計算してページを割り振ってくれる。
             $this->set('pgn', $this->paginate());                   
@@ -32,19 +43,24 @@ class PostsController extends AppController {
                     }
                 }
             }
-                       
-            
+                                   
 	}
     
         
-        public function view($id) {
+        public function view($id = false) {
+ 
+            //postされている以外の数の時はindexにリダイレクトさせる。
+            $listing = $this->Post->listing();
+            $listMax = $listing[0]['Post']['post_id'];
+            
+            if($id > 0 && $id <= $listMax){
+                //そのまま以後の操作を行う
+            }else{
+                return $this->redirect(array('action'=>'index'));
+                //リダイレクトし終了
+            }            
             
             //var_dump($id);exit;
-            
-            //postデータの獲得
-            $this->set('post', $this->Post->recording($id));   
-            
-            $table = $this->Post->recording($id);
             
             /**
              * オブジェクト参照にはコストがかかるため
@@ -53,7 +69,18 @@ class PostsController extends AppController {
              * $this->set('post', $table);   
              */
             
-            //prevデータ（前のデータ）の獲得
+            //postデータの獲得
+            $table = $this->Post->recording($id);
+            $this->set('post', $table);            
+            
+            /**
+             * オブジェクト参照にはコストがかかるため
+             * 2回以上使うオブジェクトは変数に入れてしまったほうがいい
+             * $table = $this->Post->recording($id)
+             * $this->set('post', $table);   
+             */
+            
+            //prevデータ（前のデータ）の獲得            
             $this->set('prev', $this->Post->recording($table[0]['Post']['reply_post_id']));            
             
             //nextデータの獲得
@@ -61,13 +88,24 @@ class PostsController extends AppController {
             
         }  
         
-        public function delete($id) {
+        public function delete($id = false) {
             
-            if ($this->Post->delete($id)) {
-                $this->Session->setFlash('Deleted!');
-                $this->redirect(array('action'=>'index'));
-            }             
+            $user = $this->Auth->user();
+            $table = $this->Post->recording($id);
             
+            
+            if ($user['member_id'] == $table[0]['Post']['member_id']){            
+                if ($this->Post->delete($id)) {
+                    $this->Session->setFlash('Deleted!');
+                    $this->redirect(array('action'=>'index'));
+                }             
+            
+            }else{
+                    $this->Session->setFlash('Failed!');
+                    $this->redirect(array('action'=>'index'));                
+            }    
+                
+                
         }  
         
         

@@ -8,15 +8,9 @@
 
 <body>
 
-    <?php //echo $this->element('sql_dump');exit; ?>
-    
-    <?php //var_dump($count);exit; ?>
-    <?php //var_dump($posts); ?>  
-    <!-- array(7) { ["member_id"]=> string(2) "34" 
-    ["name"]=> string(3) "abc" ["email"]=> string(7) "def@ghi" ["photo"]=> string(0) "" 
-    ["picture"]=> string(0) "" ["created"]=> string(19) "2015-02-16 10:59:30" 
-    ["modified"]=> string(19) "2015-02-16 10:59:30" } -->
-    <?php //echo $count; ?>
+    <?php //echo $this->element('sql_dump');exit; 
+    //var_dump($postAsc);exit;
+    ?>
     
   <div id="wrap">
     <div id="head">
@@ -29,10 +23,18 @@
         <dl>
           <dt><?php echo h($user['name']); ?>さん、メッセージをどうぞ</dt>
           <dd>
-            <?php echo $this->Form->textarea('message', array('cols' => 50 ,'rows' => 5 , 'value' => '')); ?> 
-            <!-- <textarea name="message" cols="50" rows="5"><?php //echo h($message); ?></textarea> -->
+            <?php 
+            if(isset($reply[0]['Post']['message'])){
+                echo $this->Form->textarea('message', array('cols' => 50 ,'rows' => 5, 'value' => $reply[0]['Post']['message']));
+            }else{
+                echo $this->Form->textarea('message', array('cols' => 50 ,'rows' => 5));                
+            }
             
-            <?php echo $this->Form->hidden('reply_post_id', array('value' => 0)); ?>               
+            ?> 
+            <!-- <textarea name="message" cols="50" rows="5"><?php //echo h($message); ?></textarea> -->
+              
+              
+            <?php echo $this->Form->hidden('reply_post_id', array('value' => $postId)); ?>               
             <!-- <input type="hidden" name="reply_post_id" value="<?php //echo h($_REQUEST['res']); ?>" /> -->
           </dd>
         </dl>
@@ -55,8 +57,7 @@
 
       <!-- 表示メッセージ（URLがあれば、リンク作成の仕様） -->
      <?php 
-        //echo makeLink(htmlspecialchars($post['message']));
-        echo h($post['Post']['message']);     
+        echo $this->Text->autoLink(h($post['Post']['message']));     
      ?>
 
       <span class="name">（<?php echo h($post['Member']['name']); ?>）</span>[<?php echo $this->Html->link('Re','./index/' . $post['Post']['post_id']); ?>]</p>
