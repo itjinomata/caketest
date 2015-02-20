@@ -14,7 +14,16 @@ class PostsController extends AppController {
         );
         
         //関数に値が渡されなかったら、カッコ内の値が渡される。
-    	public function index($id = 0) {            
+    	public function index($id = 0) {
+            /**
+             * tableのプライマリーキーがidならこれでいいけど
+             * もし違うのであれば変数名変えてください
+             * 
+             * id0の存在する可能性があるため、こういうときは一般的にbooleanの値を渡したほうがわかりやすいと思います
+             * というのもリレーショナルデータベースではidで紐づけることが多く、
+             * 値が渡されなかった際、id0が入るつまり何にも紐付いていないデータを取得するんだな
+             * と勘違いされる可能性があるためです
+             */
             
             $listing = $this->Post->listing();
             $listMax = $listing[0]['Post']['post_id'];
@@ -94,6 +103,13 @@ class PostsController extends AppController {
             $table = $this->Post->recording($id);
             
             
+            /**
+             * if文での変数の=演算子での評価は
+             * 基本的に3つつけるようにしてください
+             * 2つだと型のチェックまでしれくれず
+             * (string)0 = (int)0
+             * が成り立ってしまい、これで思わぬバグにつながることがあります
+             */
             if ($user['member_id'] == $table[0]['Post']['member_id']){            
                 if ($this->Post->delete($id)) {
                     $this->Session->setFlash('Deleted!');
